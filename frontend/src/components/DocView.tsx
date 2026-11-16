@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CommentPanel } from "@/components/CommentPanel";
 import { ExportButton } from "@/components/ExportButton";
 import { Player } from "@/components/Player";
@@ -23,7 +23,15 @@ const ZOOM_STEP = 0.25;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
 const DEFAULT_ZOOM = 1.25;
-const parseBool = (raw: string | null) => raw === "true";
+const SHORTCUTS = [
+  ["space", "Play / pause"],
+  ["[  ]", "Slower / faster"],
+  ["c", "Comment on selection or current sentence (pauses audio)"],
+  ["n  p", "Next / previous comment"],
+  ["⌘↵", "Add comment"],
+  ["esc", "Cancel comment"],
+] as const;
+const parseBool =(raw: string | null) => raw === "true";
 
 const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ block: "center", behavior: "smooth" });
 
@@ -91,8 +99,19 @@ export function DocView() {
     p: () => goComment(-1),
     c: async () => {
       const { readSelection } = await import("@/components/PdfViewer");
-      const s = readSelection(scale);
-      if (s) setDraft(s);
+      const s = reader.sentences[reader.index];
+      // no text selected: comment on the sentence being read
+      // ponytail: a sentence that crosses pages is clipped to its first page, like text selections
+      const target =
+        readSelection(scale) ??
+        (s && {
+          page: s.page,
+          text: s.text,
+          rects: s.rects.filter((r) => r.page === s.page).map(({ x0, y0, x1, y1 }) => ({ x0, y0, x1, y1 })),
+        });
+      if (!target) return;
+      reader.pause();
+      setDraft(target);
     },
   });
 
@@ -154,7 +173,7 @@ export function DocView() {
           </div>
           <Player reader={reader} readAlong={readAlong} setReadAlong={setReadAlong} pages={meta?.pages ?? 0} />
         </div>
-        <div className="w-80 shrink-0 border-l border-line bg-surface">
+        <div className="flex w-80 shrink-0 flex-col border-l border-line bg-surface">
           <CommentPanel
             items={items}
             draft={draft}
@@ -163,10 +182,17 @@ export function DocView() {
             onChange={change}
             onDelete={remove}
           />
-          <p className="border-t border-line p-3 text-xs text-muted">
-            Keys: <kbd>space</kbd> play · <kbd>[</kbd> <kbd>]</kbd> speed · <kbd>c</kbd> comment · <kbd>n</kbd>{" "}
-            <kbd>p</kbd> next/prev comment
-          </p>
+          <details className="border-t border-line p-3 text-xs">
+            <summary className="cursor-pointer text-muted">Keyboard shortcuts</summary>
+            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+              {SHORTCUTS.map(([keys, what]) => (
+                <Fragment key={what}>
+                  <dt className="font-mono">{keys}</dt>
+                  <dd>{what}</dd>
+                </Fragment>
+              ))}
+            </dl>
+          </details>
         </div>
       </div>
     </div>

@@ -89,3 +89,31 @@ test("reading position is remembered and last-comment button jumps", async ({ pa
   await page.getByRole("button", { name: "Last comment (#1)" }).click();
   await expect(page.locator('[data-page="1"] .overlay').first()).toBeInViewport();
 });
+
+test("c comments on the current sentence when nothing is selected", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('input[type="file"]').setInputFiles(SAMPLE);
+  await page.getByRole("link", { name: "sample.pdf" }).first().click();
+  await expect(page.getByText(/^\d+\/4$/)).toBeVisible();
+  await page.getByRole("button", { name: "Next sentence" }).click();
+  await expect(page.getByText("2/4")).toBeVisible();
+
+  await page.keyboard.press("c");
+  const draft = page.getByTestId("draft");
+  await expect(draft.locator("blockquote")).not.toHaveText("“”");
+  await expect(draft.getByRole("textbox", { name: "Comment" })).toBeFocused();
+  await draft.getByRole("textbox", { name: "Comment" }).fill("unclear");
+  await draft.getByRole("button", { name: "Add comment" }).click();
+  await expect(page.getByRole("button", { name: "Last comment (#1)" })).toBeEnabled();
+  await expect(page.locator(".overlay").first()).toBeAttached();
+});
+
+test("keyboard shortcut key is visible and expands", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('input[type="file"]').setInputFiles(SAMPLE);
+  await page.getByRole("link", { name: "sample.pdf" }).first().click();
+  const key = page.getByText("Keyboard shortcuts");
+  await expect(key).toBeInViewport();
+  await key.click();
+  await expect(page.getByText("Comment on selection or current sentence")).toBeInViewport();
+});

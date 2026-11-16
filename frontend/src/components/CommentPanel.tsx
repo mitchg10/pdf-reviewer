@@ -84,7 +84,7 @@ function Item({ a, onChange, onDelete }: { a: Annotation } & Pick<Props, "onChan
 export function CommentPanel({ items, draft, onAdd, onCancel, onChange, onDelete }: Props) {
   const sorted = [...items].sort((a, b) => a.number - b.number);
   return (
-    <aside aria-label="Comments" className="flex h-full flex-col overflow-y-auto">
+    <aside aria-label="Comments" className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       {draft && <DraftForm key={draft.text + draft.page} draft={draft} onAdd={onAdd} onCancel={onCancel} />}
       {sorted.length === 0 && !draft && (
         <p className="p-3 text-sm text-muted">Select text in the PDF to add a comment.</p>
