@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f6f4;
+  --surface-1: #fcfcfb;
+  --foreground: #0b0b0b;
+  --text-secondary: #52514e;
+  --border: #e2e1dc;
+  --series-1: #0072b2;
+  /* Okabe-Ito (colorblind-safe); severity: 6 Consider, 4 Should fix, 2 Must fix, 3 Praise */
+  --series-2: #d55e00;
+  --series-3: #009e73;
+  --series-4: #e69f00;
+  --series-6: #56b4e9;
+  --chip: #dbeafe;
+  --danger: #d55e00;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #121211;
+  --surface-1: #1a1a19;
+  --foreground: #ffffff;
+  --text-secondary: #c3c2b7;
+  --border: #34332f;
+  --series-1: #3d9fd8;
+  --series-2: #e8803a;
+  --series-3: #2fbf95;
+  --series-4: #f2b84b;
+  --series-6: #7fc6ee;
+  --chip: #1e3a5f;
+  --danger: #e8803a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface-1);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--text-secondary);
+  --color-line: var(--border);
+  --color-chip: var(--chip);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Annotation and read-along overlays sit above the canvas, below the text layer */
+.overlay {
+  position: absolute;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+  z-index: 1;
+}
+:root[data-theme="dark"] .overlay {
+  mix-blend-mode: normal;
+  opacity: 0.35;
+}
+.react-pdf__Page__textContent {
+  z-index: 2;
+}
